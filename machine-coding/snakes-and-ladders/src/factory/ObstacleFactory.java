@@ -1,0 +1,16 @@
+package factory;
+
+import enums.ObstacleType;
+import model.Ladder;
+import model.Obstacle;
+import model.Snake;
+
+public class ObstacleFactory {
+    public static Obstacle createObstacle(ObstacleType type, int up, int down) {
+        return switch (type) {
+            case SNAKE -> new Snake(up, down);
+            case LADDER -> new Ladder(up, down);
+            default -> throw new IllegalArgumentException("Invalid obstacle type");
+        };
+    }
+}

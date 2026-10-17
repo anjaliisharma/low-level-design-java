@@ -1,0 +1,111 @@
+@startuml
+title Uber / Ola LLD — Class Diagram
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "model" {
+  enum Rating
+  enum TripStatus
+
+  class Location {
+    - latitude: double
+    - longitude: double
+    + distanceTo(other: Location): double
+  }
+
+  class Rider {
+    - name: String
+    - rating: Rating
+    + getName(): String
+    + getRating(): Rating
+  }
+
+  class Driver {
+    - name: String
+    - rating: Rating
+    - currentLocation: Location
+    - available: boolean
+    + assign(): void
+    + completeAt(location: Location): void
+  }
+
+  class TripMetadata {
+    - source: Location
+    - destination: Location
+    - riderRating: Rating
+    - driverRating: Rating
+    + tripDistance(): double
+  }
+
+  class Trip {
+    - id: long
+    - price: BigDecimal
+    - status: TripStatus
+    + start(): void
+    + end(): void
+  }
+}
+
+package "strategy" {
+  interface PricingStrategy {
+    + calculatePrice(metadata: TripMetadata): BigDecimal
+  }
+  class DefaultPricingStrategy
+  class RatingBasedPricingStrategy
+
+  interface DriverMatchingStrategy {
+    + matchDriver(metadata: TripMetadata): Driver
+  }
+  class LeastTimeBasedMatchingStrategy
+}
+
+package "service" {
+  class DriverRepository {
+    + add(driver: Driver): void
+    + findAvailable(): List~Driver~
+  }
+  class TripService {
+    - pricingStrategy: PricingStrategy
+    - matchingStrategy: DriverMatchingStrategy
+    + createTrip(rider, source, destination): Trip
+    + getAllTrips(): Collection~Trip~
+  }
+}
+
+class App <<Demo / Client>>
+
+Rider --> Rating
+Driver --> Rating
+Driver *-- Location : current position
+TripMetadata *-- Location : route
+TripMetadata --> Rating : rider / driver rating
+Trip *-- Rider
+Trip *-- Driver
+Trip *-- Location : route
+Trip --> TripStatus
+
+DefaultPricingStrategy ..|> PricingStrategy
+RatingBasedPricingStrategy ..|> PricingStrategy
+LeastTimeBasedMatchingStrategy ..|> DriverMatchingStrategy
+PricingStrategy --> TripMetadata
+DriverMatchingStrategy --> TripMetadata
+LeastTimeBasedMatchingStrategy ..> DriverRepository : queries available drivers
+
+DriverRepository o-- Driver : stores
+TripService o-- Trip : stores
+TripService ..> TripMetadata : builds
+TripService --> PricingStrategy : uses
+TripService --> DriverMatchingStrategy : uses
+
+App ..> DriverRepository
+App ..> TripService
+
+note bottom of TripService
+  Creation flow:
+  1. Build TripMetadata
+  2. Match nearest available driver
+  3. Calculate price
+  4. Assign driver and store Trip
+end note
+@enduml

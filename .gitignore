@@ -1,0 +1,35 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Java and Maven build output
+out/
+target/
+target-plain/
+.maven-cache/
+*.class
+*.jar
+*.war
+
+# Test-generated state and reports
+.jqwik-database
+surefire-reports/
+
+# Logs and JVM crash reports
+*.log
+logs.txt
+hs_err_pid*
+replay_pid*
+
+# Environment and local configuration
+.env
+.env.*
+!.env.example
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
